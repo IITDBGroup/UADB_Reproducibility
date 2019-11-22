@@ -8,13 +8,13 @@ GProM is available at [https://github.com/IITDBGroup/gprom](https://github.com/I
 
 - Repository: https://github.com/IITDBGroup/gprom
 - Programming Language: C, Python
-- **Additional Programming Language info:** we are requiring PythonX. TODO
+- **Additional Programming Language info:** we are requiring Python3.6.9
 - **Compiler Info:** TODO
 - **Required libraries/packages:**
-  - gnuplot (TODO versions?)
-  - ps2pdf
+  - gnuplot (5.2)
+  - pg8000
   - ... GPRoM dependencies
-  - python (TODO version)
+  - python (3.6.9)
 
 
 ## B)  Datasets info
@@ -93,8 +93,9 @@ As mentioned before, Cape is written in Python. We recommend creating a python3 
 ### Run Experiments
 
 To run all default experiments:
-> python3 gen.py
-
+~~~shell
+ python3 gen.py
+~~~
 The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots). 
 
 ### Suggestions and Instructions for Alternative Experiments
