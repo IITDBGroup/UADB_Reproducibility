@@ -92,7 +92,10 @@ As mentioned before, Cape is written in Python. We recommend creating a python3 
 
 ### Run Experiments
 
-- TODO
+To run all default experiments:
+> python3 gen.py
+
+The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots). 
 
 ### Suggestions and Instructions for Alternative Experiments
 
