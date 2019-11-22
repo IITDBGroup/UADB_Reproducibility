@@ -1,0 +1,9 @@
+create table part_p_partkey (c1 integer, w1 integer, tid integer, p_partkey integer);
+create table part_p_name (c1 integer, w1 integer, tid integer, p_name varchar);
+create table part_p_mfgr (c1 integer, w1 integer, tid integer, p_mfgr varchar);
+create table part_p_brand (c1 integer, w1 integer, tid integer, p_brand varchar);
+create table part_p_type (c1 integer, w1 integer, tid integer, p_type varchar);
+create table part_p_size (c1 integer, w1 integer, tid integer, p_size integer);
+create table part_p_container (c1 integer, w1 integer, tid integer, p_container varchar);
+create table part_p_retailprice (c1 integer, w1 integer, tid integer, p_retailprice float);
+create table part_p_comment (c1 integer, w1 integer, tid integer, p_comment varchar);

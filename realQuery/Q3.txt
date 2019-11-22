@@ -1,0 +1,14 @@
+select "Street Address","ZIP Code","Status" from graffiti where "Status"='Open';
+
+select count(*) from
+(select "u_Street Address","u_status","u_ZIP Code","u_r" from graffiti
+where status="Open")
+where "u_Street Address"='t' and "u_status"='t' and "u_ZIP Code"='t' and "u_r"='f';
+
+
+0
+231
+
+
+(0.287+0.279+0.292+0.298+0.298-(0.288+0.292+0.288+0.289+0.278))/(0.288+0.292+0.288+0.289+0.278)
+0.0132

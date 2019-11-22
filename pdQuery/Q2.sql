@@ -1,0 +1,1 @@
+SELECT l_extendedprice FROM lineitem_bg l WHERE to_date(l_shipdate,'yyyy-mm-dd') > to_date('1994-01-01','yyyy-mm-dd') AND to_date(l_shipdate,'yyyy-mm-dd') < to_date('1996-01-01','yyyy-mm-dd') AND l_discount > 0.05 AND l_discount < 0.08 AND l_quantity < 24;
