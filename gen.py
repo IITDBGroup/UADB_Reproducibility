@@ -23,7 +23,7 @@ s = [0.1, 1, 10]
 x = [0.02, 0.05, 0.1, 0.3]
 
 psqlbin = '/Applications/Postgres.app/Contents/Versions/10/bin/psql -p5432 "uadb" -c '
-gpromcom = [str("gprom"), "-host", "none", "-db", "/Users/sufeng/git/2019_SIGMOD_UADBS/reproduce/dbs/incomp.db", "-port", "none", "-user", "none", "-passwd", "none", "-loglevel", "0", "-backend", "sqlite", "-Pexecutor", "sql", "-query"]
+gpromcom = [str("gprom"), "-host", "none", "-db", "/Users/sufeng/git/UADB_Reproducibility/dbs/incomp.db", "-port", "none", "-user", "none", "-passwd", "none", "-loglevel", "0", "-backend", "sqlite", "-Pexecutor", "sql", "-query"]
 
 # pdbench
 table_init_dir = 'table_init_sql'
@@ -597,7 +597,10 @@ def test_untility():
         
 def test_realQ():
     queries = ['realQuery/Q1.txt','realQuery/Q2.txt','realQuery/Q3.txt','realQuery/Q4.txt']
+    runLiteQuery("drop table if exists dummy;")
     global gpromcom
+    global dir
+    gpromcom[4] = dir+"/dbs/incomp.db"
     rep = 10
     ret = "\tQ1\tQ2\tQ3\tQ4\tQ5\nOverhead\t"
     for qf in queries:
@@ -650,13 +653,13 @@ def test_incomp():
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.abspath(__file__))
     print(dir)
+    subprocess.call(["mkdir", "results"])
     
-    #unzip databases
+#    unzip databases
     print('Unzipping tables')
     with ZipFile('dbs/dbs.zip', 'r') as zipObj:
         zipObj.extractall(path='dbs/')
-    
-    subprocess.call(["mkdir", "results"])
+
 #
     pdbenchGenOnX()#gen pdbench uncert
     test_pdbench_uncert()
