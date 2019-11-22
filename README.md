@@ -78,31 +78,110 @@ git clone git@github.com:IITDBGroup/gprom ...
 
 As mentioned before, Cape is written in Python. We recommend creating a python3 [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/). There are several ways to do that. Here we illustrate one. First enter the directory in which you cloned the capexplain git repository.
 
-
 - TODO
 
 ### Install PDBench
 
 - TODO
 
-
 ### Install Postgres + load database ###
 
 - TODO
 
-### Run Experiments
+# Run Experiments
 
 To run all default experiments:
 ~~~shell
  python3 gen.py
 ~~~
-The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots). 
+The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots).
 
-### Suggestions and Instructions for Alternative Experiments
+# Suggestions and Instructions for Alternative Experiments
 
+## PDBench experiments with different parameter settings
+- TODO
+
+## Projection experiments with different parameters
 
 - TODO
 
+## Running ad hoc queries through GProM
+
+You can use the gprom system included in the container to run queries with UA-DB semantics over the provided datasets.
+
+### GProM UA-DB Syntax
+
+To run a query with uncertain semantics, the whole query should be wrapped in:
+
+~~~sql
+TUPLE UNCERTAIN (
+    ...
+);
+~~~
+
+Unless instructed otherwise, GProM expects inputs to be UA-DBs. However, GProM can also interpret different types of uncertain data models and translate them into UA-DBs as part of queries. To inform GProM that an input table should be interpreted as a certain type of uncertain relation, you specify the type after the table access in the `FROM` clause. Currently, we support tuples-independent probabilistic databases (TIPS) and x-relations.
+
+#### TIPs
+
+A TIP stores for each row it's marginal probability. The existence of tuples in the database are assumed to be mutually independent of each other. That is, the set of possible worlds represented by a TIP database are all subsets of the TIP database. To use a TIP table in GProM, the table should have an additional attribute storing the tuple probabilities and the table access in the `FROM` clause should be followed by `IS TIP (prob)` where `prob` is the name of the attribute storing tuple probabilities. For instance, consider this table `R` (attribute `p` stores probabilities):
+
+```sql
+| name  | age | p  |
+|-------|-----|----|
+| Peter | 34 | 0.9 |
+| Alice | 19 | 0.6 |
+| Bob   | 23 | 1.0 |
+```
+
+An example query over this table
+
+~~~sql
+TUPLE UNCERTAIN (
+  SELECT * FROM R IS TIP(p);
+);
+~~~
+
+#### X-DBs
+
+An X-table consists of x-tuples which are sets of tuples called alternatives, each associated with a probability. X-tables are a specific type of block-independent probabilistic databases. The alternatives of an x-tuple are disjoint events while alternatives from different x-tuples are independent events. GProM expects an X-tables to have two additional attributes: one that stores probabilities for alternatives and one that stores a unique identifier for each x-tuple. For instance, consider the following table where we are uncertain about Peter's age, and Alice may or may not be in the table.
+
+```sql
+| name  | age | x-id |  p  |
+|-------|-----|------|----|
+| Peter | 34 | 1     | 0.4 |
+| Peter | 35 | 1     | 0.3 |
+| Peter | 36 | 1     | 0.3 |
+| Alice | 19 | 2     | 0.6 |
+| Bob   | 23 | 3     | 1.0 |
+```
+
+To use a X-table in GProM you have to specify the names of the attributes storing probabilities and x-tuple identifiers. For instance, for the table above:
+
+~~~sql
+TUPLE UNCERTAIN (
+  SELECT * FROM R IS XTABLE(x-id,p);
+);
+~~~
+
+
+
+
+
+### Pointers
+
+To run queries over the provided datasets use start gprom like this:
+
+~~~sh
+gprom -backend sqlite -db ./ TODO
+~~~
+
+#### Table names
+
+#### Example Queries
+
+~~~sql
+
+~~~
 
 # Appendix (previous instructions)
 
