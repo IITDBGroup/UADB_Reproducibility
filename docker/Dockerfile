@@ -12,6 +12,7 @@ RUN apt-get -y update && apt-get install -y \
     python3 \
     postgresql \
     python3-pip \
+    sudo \
 	&& rm -rf /var/lib/apt/lists/*
 ########################################
 # Install python packages
@@ -32,30 +33,31 @@ RUN cd /gprom/src \
 ########################################
 # Install MayBMS
 ########################################
-RUN git clone https://gitlab.odin.cse.buffalo.edu/okennedy/MayBMS_Mirror /maybms/src \
-    && cd /maymbs/postgresql-8.3.3/ \
-    && ./configure --prefix /maybms/install \
-    && make -j 32 \
-    && make install
+#RUN git clone https://gitlab.odin.cse.buffalo.edu/okennedy/MayBMS_Mirror /maybms/src
+#RUN cd /maybms/src/postgresql-8.3.3/ \
+#    && ./configure --prefix /maybms/install \
+#    && make -j 32 \
+#    && make install
 ########################################
 # Create database cluster for MayBMS
 ########################################
-RUN mkdir -p /maybms/data \
-    && /maybms/install/bin/initdb -D /maybms/data
+#RUN mkdir -p /maybms/data \
+#    && /maybms/install/bin/initdb -D /maybms/data
 ########################################
 # Create database cluster for MayBMS
 ########################################
 RUN mkdir -p /postgresdata \
-    && /usr/bin/initdb -D /postgresdata
+    && chown -R postgres /postgresdata/ \
+    && sudo -u postgres /usr/lib/postgresql/9.5/bin/initdb -D /postgresdata
+########################################
+# Clone reproducibility repro
+########################################
+RUN git clone https://github.com/IITDBGroup/UADB_Reproducibility.git /reproducibility
 ########################################
 # Add sqlite DB for experiments
 ########################################
 RUN mkdir -p /repoducibility/dbs
 ADD ./dbs.zip /reproducibility/dbs/dbs.zip
-########################################
-# Clone reproducibility repro
-########################################
-RUN git clone https://github.com/IITDBGroup/UADB_Reproducibility.git /reproducibility
 ########################################
 # Setup workdin
 ########################################
@@ -63,7 +65,8 @@ WORKDIR /reproducibility
 ########################################
 # Per default start the gprom command line interface
 ########################################
-ENTRYPOINT ["/reproducibility/gen.py"]
+ENTRYPOINT ["gprom"]
+#ENTRYPOINT ["/reproducibility/gen.py"]
 ########################################
 # Per default show help message
 ########################################
