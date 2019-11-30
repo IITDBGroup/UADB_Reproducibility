@@ -656,7 +656,7 @@ if __name__ == '__main__':
     
     #start postgres server
     print("start server")
-#    os.spawnl(os.P_NOWAIT, 'sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
+    os.spawnl(os.P_NOWAIT, 'sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
 #    subprocess.call(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"])
     print("server started")
     
