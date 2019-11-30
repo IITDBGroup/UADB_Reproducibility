@@ -583,7 +583,7 @@ def test_pdbenchSize():
     subprocess.call(["mv", "size.csv","results/pdbench_stats/size.csv"])
     writetofile("results/pdbench_stats/uncert_percentage.csv",ret)
             
-def test_untility():
+def test_ultility():
     #ultility test
     #buffalo
     dbn = 'dbs/buff_ulti.db'
@@ -657,32 +657,101 @@ if __name__ == '__main__':
     subprocess.call(["mkdir", "results"])
     
     #parse arguments
-    helpmsg  = "UADB reproducibility main script \nBy default the script will run all default test and if interrupted continue running from last experiment without repeating previous experiments.\n"
+    helpmsg  = "UADB reproducibility main script. By default the script will run all default test and if interrupted continue running from last experiment without repeating previous experiments."
     
     parser = argparse.ArgumentParser(description=helpmsg)
-    parser.add_argument("-R", "--redo", help="Start the script from begining discrd all progress", action="redo_true")
+    parser.add_argument("-r", "--redo", help="Start the script from begining discrd all progress", action="store_true")
+    parser.add_argument("-s", "--step", help="Specify a single step to execute")
     args = parser.parse_args()
+    singlestep = -1
+    if args.step:
+        singlestep = int(args.step)
     if args.redo:
-        print("redo!!!!!!!!")
+        config.stepsetconfig(curstep=0)
     
+    curs = config.stepconfig()
 #    unzip databases
-    print('Unzipping tables')
-    with ZipFile('dbs/dbs.zip', 'r') as zipObj:
-        zipObj.extractall(path='dbs/')
+    if curs == 0:
+        print('Unzipping tables')
+        with ZipFile('dbs/dbs.zip', 'r') as zipObj:
+            zipObj.extractall(path='dbs/')
+        curs += 1
+        if singlestep==0:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing unzip")
+    
+    if curs == 1:
+        pdbenchGenOnX()#gen pdbench uncert
+        pdbenchGenOnS()#gen pdbench scale.
+        curs += 1
+        if singlestep==1:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing pdbench gen")
+        
+    if curs == 2 and singlestep == -1 or singlestep == 2:
+        test_pdbench_uncert()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing PDbench uncert test")
 #
-#    pdbenchGenOnX()#gen pdbench uncert
-#    test_pdbench_uncert()
-#
-#    pdbenchGenOnS()#gen pdbench scale.
-#    test_pdbench_scale()
+    if curs == 3 and singlestep == -1 or singlestep == 3:
+        test_pdbench_scale()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By Passing PDbench scale test")
 
-#    test_pdbenchSize()
+    if curs == 4 and singlestep == -1 or singlestep == 4:
+        test_pdbenchSize()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing PDbench size test")
 
-#    test_incomp()
+    if curs == 5 and singlestep == -1 or singlestep == 5:
+        test_incomp()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing incomplete test")
 
-#    test_untility()
-#
-    test_realQ()
+    if curs == 6 and singlestep == -1 or singlestep == 6:
+        test_ultility()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing ultility test")
+        
+    if curs == 7 and singlestep == -1 or singlestep == 7:
+        test_realQ()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            quit()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing real query test")
+        
 
     
     

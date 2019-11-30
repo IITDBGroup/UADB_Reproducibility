@@ -16,3 +16,27 @@ def config(filename='config/database.ini', section='postgresql'):
     else:
         raise Exception('Section {0} not found in the {1} file'.format(section, filename))
     return db
+
+def stepconfig():
+    filename='config/database.ini'
+    section='step'
+    parser = ConfigParser()
+    parser.read(filename)
+    if parser.has_section(section):
+        ret = parser.get(section, 'curstep')
+        return int(ret)
+    else:
+        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
+    
+def stepsetconfig(curstep=0):
+    filename='config/database.ini'
+    section='step'
+    parser = ConfigParser()
+    parser.read(filename)
+    if parser.has_section(section):
+        parser[section]['curstep'] = str(curstep)
+        with open(filename, 'w') as configfile:    # save
+            parser.write(configfile)
+    else:
+        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
+    

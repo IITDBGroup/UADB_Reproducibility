@@ -1,3 +1,8 @@
 .DS_Store
 *.db
 /results
+*.tbl
+*.pyc
+*.zip
+*.o
+database.ini copy
