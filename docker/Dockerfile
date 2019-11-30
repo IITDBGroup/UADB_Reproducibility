@@ -17,7 +17,8 @@ RUN apt-get -y update && apt-get install -y \
 ########################################
 # Install python packages
 ########################################
-RUN pip3 install pg8000
+RUN pip3 install pg8000 \
+    && pip3 install numpy
 ########################################
 # Clone GProM github repository
 ########################################
@@ -65,9 +66,10 @@ WORKDIR /reproducibility
 ########################################
 # Per default start the gprom command line interface
 ########################################
-ENTRYPOINT ["gprom"]
+#ENTRYPOINT ["gprom"]
 #ENTRYPOINT ["/reproducibility/gen.py"]
+ENTRYPOINT ["/bin/bash"]
 ########################################
 # Per default show help message
 ########################################
-#CMD ["-help"]
+#CMD [""]

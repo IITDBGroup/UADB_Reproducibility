@@ -659,7 +659,6 @@ if __name__ == '__main__':
     print('Unzipping tables')
     with ZipFile('dbs/dbs.zip', 'r') as zipObj:
         zipObj.extractall(path='dbs/')
-
 #
 #    pdbenchGenOnX()#gen pdbench uncert
 #    test_pdbench_uncert()
@@ -673,7 +672,7 @@ if __name__ == '__main__':
 
 #    test_untility()
 #
-#    test_realQ()
+    test_realQ()
 
     
     
