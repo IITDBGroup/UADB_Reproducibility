@@ -661,19 +661,19 @@ if __name__ == '__main__':
         zipObj.extractall(path='dbs/')
 
 #
-    pdbenchGenOnX()#gen pdbench uncert
-    test_pdbench_uncert()
+#    pdbenchGenOnX()#gen pdbench uncert
+#    test_pdbench_uncert()
 #
-    pdbenchGenOnS()#gen pdbench scale.
-    test_pdbench_scale()
+#    pdbenchGenOnS()#gen pdbench scale.
+#    test_pdbench_scale()
 
-    test_pdbenchSize()
+#    test_pdbenchSize()
 
-    test_incomp()
+#    test_incomp()
 
-    test_untility()
+#    test_untility()
 #
-    test_realQ()
+#    test_realQ()
 
     
     
