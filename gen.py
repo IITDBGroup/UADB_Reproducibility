@@ -32,8 +32,8 @@ pdbenchTables = ['customer','lineitem','nation','orders','part','partsupp','regi
 
 #dir = '/Users/sufeng/sqlworkspace/pdbench'
 mcdbRep = 10
-#test1 = ['s10_x2','s10_x2']
-test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
+test1 = ['s10_x2','s10_x5','s10_x10','s10_x30']
+#test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
 test2 = ['s10_x2','s100_x2','s1000_x2']
 queries = ['pdQuery/Q1.sql','pdQuery/Q2.sql','pdQuery/Q3.sql']
 queries_mb = ['pdQuery/Q1_maybms.sql','pdQuery/Q2_maybms.sql','pdQuery/Q3_maybms.sql']
@@ -100,8 +100,7 @@ def sizeQuery(query):
     ret = runQuery('select count(*) from (%s) x;'%query[:-1])
     return ret[-1][0];
     
-def pdbenchGenOnX():
-    sval = 1
+def pdbenchGenOnX(sval = 1):
     global dir
     global x
     genDir = list()
@@ -120,8 +119,7 @@ def pdbenchGenOnX():
     global test1
     test1 = genDir
     
-def pdbenchGenOnS():
-    xval = 0.02
+def pdbenchGenOnS(xval = 0.02):
     global dir
     global s
     genDir = list()
@@ -656,6 +654,13 @@ if __name__ == '__main__':
     print(dir)
     subprocess.call(["mkdir", "results"])
     
+    #start postgres server
+    print("start server")
+#    os.spawnl(os.P_NOWAIT, 'sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
+#    subprocess.call(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"])
+    print("server started")
+    
+    
     #parse arguments
     helpmsg  = "UADB reproducibility main script. By default the script will run all default test and if interrupted continue running from last experiment without repeating previous experiments."
     
@@ -676,19 +681,19 @@ if __name__ == '__main__':
         with ZipFile('dbs/dbs.zip', 'r') as zipObj:
             zipObj.extractall(path='dbs/')
         curs += 1
+        config.stepsetconfig(curs)
         if singlestep==0:
             quit()
-        config.stepsetconfig(curs)
     else:
         print("By passing unzip")
     
     if curs == 1:
-        pdbenchGenOnX()#gen pdbench uncert
-        pdbenchGenOnS()#gen pdbench scale.
+        pdbenchGenOnX(0.1)#gen pdbench uncert
+#        pdbenchGenOnS()#gen pdbench scale.
         curs += 1
+        config.stepsetconfig(curs)
         if singlestep==1:
             quit()
-        config.stepsetconfig(curs)
     else:
         print("By passing pdbench gen")
         
@@ -752,8 +757,8 @@ if __name__ == '__main__':
     else:
         print("By passing real query test")
         
-
-    
+    #stop server
+    subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])
     
 
     

@@ -6,3 +6,5 @@
 *.zip
 *.o
 database.ini copy
+/dbgen/dbgen
+/dbgen/qgen
