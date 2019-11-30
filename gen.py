@@ -6,6 +6,7 @@ import pg8000
 from config import config
 import time
 from zipfile import ZipFile
+import argparse
 
 import sqlite3
 import numpy as np
@@ -654,6 +655,15 @@ if __name__ == '__main__':
     dir = os.path.dirname(os.path.abspath(__file__))
     print(dir)
     subprocess.call(["mkdir", "results"])
+    
+    #parse arguments
+    helpmsg  = "UADB reproducibility main script \nBy default the script will run all default test and if interrupted continue running from last experiment without repeating previous experiments.\n"
+    
+    parser = argparse.ArgumentParser(description=helpmsg)
+    parser.add_argument("-R", "--redo", help="Start the script from begining discrd all progress", action="redo_true")
+    args = parser.parse_args()
+    if args.redo:
+        print("redo!!!!!!!!")
     
 #    unzip databases
     print('Unzipping tables')
