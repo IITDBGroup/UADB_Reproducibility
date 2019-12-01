@@ -34,16 +34,18 @@ RUN cd /gprom/src \
 ########################################
 # Install MayBMS
 ########################################
-#RUN git clone https://gitlab.odin.cse.buffalo.edu/okennedy/MayBMS_Mirror /maybms/src
-#RUN cd /maybms/src/postgresql-8.3.3/ \
-#    && ./configure --prefix /maybms/install \
-#    && make -j 32 \
-#    && make install
+RUN git clone https://gitlab.odin.cse.buffalo.edu/bglavic/MayBMS_Mirror.git /maybms/src
+RUN cd /maybms/src/postgresql-8.3.3/ \
+    && export CFLAGS='-O0' \
+    && ./configure --prefix /maybms/install \
+    && make -j 32 \
+    && make install
 ########################################
 # Create database cluster for MayBMS
 ########################################
-#RUN mkdir -p /maybms/data \
-#    && /maybms/install/bin/initdb -D /maybms/data
+RUN mkdir -p /maybms/data \
+    && chown -R postgres /maybms/data \
+    && sudo -u postgres /maybms/install/bin/initdb -D /maybms/data
 ########################################
 # Create database cluster for MayBMS
 ########################################
