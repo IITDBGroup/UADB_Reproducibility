@@ -95,11 +95,20 @@ To run all default experiments:
  python3 gen.py
 ~~~
 The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots).
+for specifying a single step using -s:
+0 - prepair sqlite database data.
+1 - pdbench data generation on all test cases.
+2 - perform pdbench test varying amount of uncertainty.
+3 - perform pdbench test varying data size.
+4 - perform pdbench result size test.
+5 - perform incompetness projection test.
+6 - perform ultility test. (not finished yet)
+7 - perform realQuery test.
 
 # Suggestions and Instructions for Alternative Experiments
 
 ## PDBench experiments with different parameter settings
-- TODO
+For now different parameter settings need to modify the 's' list and 'x' list in the gen.py file where 's' is the list of all scale factors will be tested and 'x' is the list of all uncertainty factors will be tested.(might make it configureable thourgh commands?)
 
 ## Projection experiments with different parameters
 
