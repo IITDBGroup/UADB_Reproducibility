@@ -96,14 +96,25 @@ To run all default experiments:
 ~~~
 The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots).
 for specifying a single step using -s:
+~~~shell
+-s command values:
+
 0 - prepair sqlite database data.
+
 1 - pdbench data generation on all test cases.
+
 2 - perform pdbench test varying amount of uncertainty.
+
 3 - perform pdbench test varying data size.
+
 4 - perform pdbench result size test.
+
 5 - perform incompetness projection test.
+
 6 - perform ultility test. (not finished yet)
+
 7 - perform realQuery test.
+~~~
 
 # Suggestions and Instructions for Alternative Experiments
 
