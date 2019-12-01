@@ -32,8 +32,8 @@ pdbenchTables = ['customer','lineitem','nation','orders','part','partsupp','regi
 
 #dir = '/Users/sufeng/sqlworkspace/pdbench'
 mcdbRep = 10
-test1 = ['s10_x2','s10_x5','s10_x10','s10_x30']
-#test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
+#test1 = ['s10_x2','s10_x5','s10_x10','s10_x30']
+test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
 test2 = ['s10_x2','s100_x2','s1000_x2']
 queries = ['pdQuery/Q1.sql','pdQuery/Q2.sql','pdQuery/Q3.sql']
 queries_mb = ['pdQuery/Q1_maybms.sql','pdQuery/Q2_maybms.sql','pdQuery/Q3_maybms.sql']
@@ -242,6 +242,7 @@ def testQueryPDbench():
 
         
 def plotPDbenchUncert(fn, maxval):
+    global x
     with open("%s.gp"%fn, "w+") as file:
         file.write("\n".join([
             "set size ratio 0.5",
@@ -278,7 +279,7 @@ def plotPDbenchUncert(fn, maxval):
             "set xtics border in scale 0,0 nomirror   offset character 0.5, -0.5, 2 autojustify",
             'set xtics norangelimit font ",24"',
             "set xtics   ()",
-            "set xrange [ -0.5 : 4]",
+            "set xrange [ -0.5 : %d]"%len(x),
                 
             'set ylabel "Runtime (ms)"',
             'set ylabel font "Arial,34"',
@@ -303,6 +304,7 @@ def plotPDbenchUncert(fn, maxval):
         return "%s.pdf"%fn
         
 def plotPDbenchScale(fn, maxval):
+    global s
     with open("%s.gp"%fn, "w+") as file:
         file.write("\n".join([
             "set size ratio 0.5",
@@ -339,7 +341,7 @@ def plotPDbenchScale(fn, maxval):
             "set xtics border in scale 0,0 nomirror   offset character 0.5, -0.5, 2 autojustify",
             'set xtics norangelimit font ",24"',
             "set xtics   ()",
-            "set xrange [ -0.5 : 3]",
+            "set xrange [ -0.5 : %d]"%len(s),
                     
             'set ylabel "Runtime (ms)"',
             'set ylabel font "Arial,34"',
@@ -655,10 +657,10 @@ if __name__ == '__main__':
     subprocess.call(["mkdir", "results"])
     
     #start postgres server
-    print("start server")
+#    print("start server")
 #    os.spawnl(os.P_NOWAIT, 'sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
-    subprocess.Popen(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"])
-    print("server started")
+    subprocess.Popen(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"],shell=False,close_fds=True)
+#    print("server started")
     
     
     #parse arguments
@@ -688,8 +690,8 @@ if __name__ == '__main__':
         print("By passing unzip")
     
     if curs == 1:
-        pdbenchGenOnX(0.1)#gen pdbench uncert
-#        pdbenchGenOnS()#gen pdbench scale.
+        pdbenchGenOnX()#gen pdbench uncert
+        pdbenchGenOnS()#gen pdbench scale.
         curs += 1
         config.stepsetconfig(curs)
         if singlestep==1:
