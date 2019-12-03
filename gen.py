@@ -18,6 +18,8 @@ import copy
 dir = None
 conn = None
 cur = None
+conn2 = None
+cur2 = None
 
 s = [0.1, 1, 10]
 #x = [0.02,0.05]
@@ -39,13 +41,13 @@ queries = ['pdQuery/Q1.sql','pdQuery/Q2.sql','pdQuery/Q3.sql']
 queries_mb = ['pdQuery/Q1_maybms.sql','pdQuery/Q2_maybms.sql','pdQuery/Q3_maybms.sql']
 queries_uadb = ['pdQuery/Q1_uadb.sql','pdQuery/Q2_uadb.sql','pdQuery/Q3_uadb.sql']
 queries_cert = ['pdQuery/Q1_cert.sql','pdQuery/Q2_cert.sql','pdQuery/Q3_cert.sql']
-
-def pushQuery(query):
+    
+def pushQuery(query, setion='postgresql'):
     global conn
     global cur
     if conn == None:
         try:
-            params = config.config()
+            params = config.config(section=setion)
             conn = pg8000.connect(**params)
         except (Exception,pg8000.Error) as error:
             print(error)
@@ -58,14 +60,15 @@ def pushQuery(query):
         print("query error: %s"%e)
         pass
     cur.close()
+#    conn.close()
         
-def runQuery(query):
+def runQuery(query, setion='postgresql'):
     global conn
     global cur
     if conn == None:
         try:
             # read connection parameters
-            params = config.config()
+            params = config.config(section=setion)
             # connect to the PostgreSQL server
             conn = pg8000.connect(**params)
         except (Exception, pg8000.Error) as error:
@@ -91,13 +94,13 @@ def runQuery(query):
         pass
     cur.close()
     
-def timeQuery(query):
-    ret = runQuery('EXPLAIN ANALYSE create table dummy as %s'%query)
+def timeQuery(query, setion='postgresql'):
+    ret = runQuery('EXPLAIN ANALYSE create table dummy as %s'%query, setion)
     runQuery("drop table IF EXISTS dummy;")
     return ret[-1][0].split()[-2]
     
-def sizeQuery(query):
-    ret = runQuery('select count(*) from (%s) x;'%query[:-1])
+def sizeQuery(query, setion='postgresql'):
+    ret = runQuery('select count(*) from (%s) x;'%query[:-1], setion)
     return ret[-1][0];
     
 def pdbenchGenOnX(sval = 1):
@@ -629,6 +632,7 @@ def test_pdbenchSize():
 def test_ultility():
     #ultility test
     percent = [0.05,0.1,0.3,0.5]
+    subprocess.call(["mkdir", "results/utility"])
     #buffalo
     dbn = 'dbs/buff_ulti.db'
     attrn = 'orig order_shooting'
@@ -665,9 +669,8 @@ def test_ultility():
 #    print(ret)
     writetofile("buff.csv",ret)
     fn = plotUtility("buff")
-    subprocess.call(["mv", "buff.csv","results/utility/buff.csv"])
-    subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    subprocess.call(["mv","buff.csv","results/utility/buff.csv"])
     
     #incom
     dbn = 'dbs/inq_ulti.db'
@@ -704,9 +707,8 @@ def test_ultility():
         ret += "\t%f"%uadbr_recall
     writetofile("inq.csv",ret)
     fn = plotUtility("inq")
-    subprocess.call(["mv", "inq.csv","results/utility/inq.csv"])
-    subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    subprocess.call(["mv", "inq.csv","results/utility/inq.csv"])
     
     #lisc
     dbn = 'dbs/lisc_ulti.db'
@@ -745,9 +747,8 @@ def test_ultility():
         ret += "\t%f"%uadbr_recall
     writetofile("lisc.csv",ret)
     fn = plotUtility("lisc")
-    subprocess.call(["mv", "lisc.csv","results/utility/lisc.csv"])
-    subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    subprocess.call(["mv", "lisc.csv","results/utility/lisc.csv"])
     
         
 def test_realQ():
@@ -786,7 +787,6 @@ def test_realQ():
     subprocess.call(["mkdir", "results/realQuery"])
     writetofile("results/realQuery/realQuery.csv",ret+retl2)
     
-    
 def test_incomp():
     subprocess.call(["mkdir", "results/incompleteness"])
     for x in range(0,len(tbs)):
@@ -811,6 +811,69 @@ def test_incomp():
         subprocess.call(["mv", "incomp_%s.csv"%(tbs[x]),"results/incompleteness/incomp_%s.csv"%(tbs[x])])
         subprocess.call(["mv", "%s"%pdfname,"results/incompleteness/%s"%pdfname])
         
+def test_maybms():
+    global dir
+    pushQuery("drop table if exists buffalo2;", 'maybms')
+    pushQuery("drop table if exists bp2;", 'maybms')
+    pushQuery("\n".join([
+        'create table buffalo2 (',
+        '"id" NUMERIC,',
+        '"lat" NUMERIC,',
+        '"lon" NUMERIC,',
+        '"orig order_shooting" NUMERIC,',
+        '"CD as number_shooting" NUMERIC,',
+        '"CD_shooting" VARCHAR,',
+        '"Date_shooting" VARCHAR,',
+        '"Time_shooting" VARCHAR,',
+        '"WeekNum_shooting" NUMERIC,',
+        '"Month_shooting" VARCHAR,',
+        '"Day_shooting" VARCHAR,',
+        '"Hour_shooting" NUMERIC,',
+        '"Year_shooting" NUMERIC,',
+        '"city" VARCHAR,',
+        '"state" VARCHAR,',
+        '"Location_shooting" VARCHAR,',
+        '"find space_shooting" NUMERIC,',
+        '"street_shooting" VARCHAR,',
+        '"District_shooting" VARCHAR,',
+        '"Type_shooting" VARCHAR,',
+        '"Victims_shooting" NUMERIC,',
+        '"u_lat" VARCHAR,',
+        '"u_lon" VARCHAR,',
+        '"u_orig order_shooting" VARCHAR,',
+        '"u_CD as number_shooting" VARCHAR,',
+        '"u_CD_shooting" VARCHAR,',
+        '"u_Date_shooting" VARCHAR,',
+        '"u_Time_shooting" VARCHAR,',
+        '"u_WeekNum_shooting" VARCHAR,',
+        '"u_Month_shooting" VARCHAR,',
+        '"u_Day_shooting" VARCHAR,',
+        '"u_Hour_shooting" VARCHAR,',
+        '"u_Year_shooting" VARCHAR,',
+        '"u_city" VARCHAR,',
+        '"u_state" VARCHAR,',
+        '"u_Location_shooting" VARCHAR,',
+        '"u_find space_shooting" VARCHAR,',
+        '"u_street_shooting" VARCHAR,',
+        '"u_District_shooting" VARCHAR,',
+        '"u_Type_shooting" VARCHAR,',
+        '"u_Victims_shooting" VARCHAR,',
+        '"U_R" VARCHAR,',
+        '"index" NUMERIC,',
+        '"p" NUMERIC',
+        ');'
+    ]), 'maybms')
+    pushQuery("copy buffalo2 from '%s/dbs/maybms/buffalo2.csv' DELIMITER ',' CSV HEADER;"%dir, 'maybms')
+    pushQuery('create table bp2 as repair key "index" in buffalo2 weight by "p";','maybms')
+    
+    
+def exittest():
+    print("Closing postgres servers")
+    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -D /postgresdata -m fast stop')
+    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -D /maybms/data -m fast stop')
+#    time.sleep(10)
+    quit()
+        
     
         
 if __name__ == '__main__':
@@ -819,13 +882,14 @@ if __name__ == '__main__':
     subprocess.call(["mkdir", "results"])
     
     #start postgres server
-#    print("start server")
-    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
-    os.system('\n')
-    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -o "-p 5464" -D /maybms/data start')
-    os.system('\n')
+    print("start server")
+#    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -D /postgresdata stop')
+#    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -D /maybms/data stop')
+    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata restart')
+    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -o "-p 5433" -D /maybms/data restart')
 #    subprocess.Popen(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"],shell=False,close_fds=True)
 #    subprocess.Popen(["sudo","-u","postgres","/maybms/install/bin/pg_ctl", "-o", '"-p 5464"', "-D", "/maybms/data", "start"],shell=False,close_fds=True)
+    time.sleep(10)
 #    print("server started")
     
     
@@ -851,7 +915,7 @@ if __name__ == '__main__':
         curs += 1
         config.stepsetconfig(curs)
         if singlestep==0:
-            quit()
+            exittest()
     else:
         print("By passing unzip")
     
@@ -861,7 +925,7 @@ if __name__ == '__main__':
         curs += 1
         config.stepsetconfig(curs)
         if singlestep==1:
-            quit()
+            exittest()
     else:
         print("By passing pdbench gen")
         
@@ -870,7 +934,7 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By passing PDbench uncert test")
@@ -880,7 +944,7 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By Passing PDbench scale test")
@@ -890,7 +954,7 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By passing PDbench size test")
@@ -900,7 +964,7 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By passing incomplete test")
@@ -910,7 +974,7 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By passing ultility test")
@@ -920,13 +984,21 @@ if __name__ == '__main__':
         if(singlestep == -1):
             curs += 1
         else:
-            quit()
+            exittest()
         config.stepsetconfig(curs)
     else:
         print("By passing real query test")
         
-    #stop server
-    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -D /postgresdata stop')
-    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -D /maybms/data stop')
+    if curs == 8 and singlestep == -1 or singlestep == 8:
+        test_maybms()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            exittest()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing maybms test")
+        
+    exittest()
 #    subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])
     
