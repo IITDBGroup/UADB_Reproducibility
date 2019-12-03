@@ -9,11 +9,11 @@ GProM is available at [https://github.com/IITDBGroup/gprom](https://github.com/I
 - Repository: https://github.com/IITDBGroup/gprom
 - Programming Language: C, Python
 - **Additional Programming Language info:** we are requiring Python3.6.9
-- **Compiler Info:** TODO
+- **Compiler Info:** gcc-11.0.0
 - **Required libraries/packages:**
   - gnuplot (5.2)
   - pg8000
-  - ... GPRoM dependencies
+  - GPRoM dependencies
   - python (3.6.9)
 
 
@@ -36,7 +36,7 @@ We used several open real world datasets in the experiments. See below for links
 
 - **Data generators:**
   - `PDBench` is a probabilistic version of the TPC-H data generator, we used a fork (fixing some compilation bugs) hosted here: https://github.com/IITDBGroup/pdbench
-  - To generate augment real world dataset with access control annotation, we use a python script (TODO provided as part of this repository)
+  - For real world dataset with access control annotation, we generate the data in the python testing script.
 
 ## C) Hardware Info
 
@@ -54,19 +54,38 @@ All runtime experiments were executed on a server with the following specs:
 
 ## D) Installation and Setup
 
-### Install GProM
+### Docker installation of the whole experiment envirnment
+
+A docker hub is prepared with all requirements installed,
+
+You can pull the docker image with:
+~~~shell
+docker pull iitdbgroup/uadbreproduce
+~~~
+The image entry point is set to /bin/bash, so to load the docker image in command line:
+~~~shell
+docker run -ti iitdbgroup/uadbreproduce
+~~~
+The main test script is under the default entry folder.
+All test results is saved to /results folder. To get the results in local system, mount a local system folder to the docker container result folder when load the image:
+~~~shell
+docker run -ti -v /your/local/directory:/reproducibility/results iitdbgroup/uadbreproduce 
+~~~
+
+### strp by step installations (not required if use docker)
+
+#### Install GProM
 
 Please follow these instructions to install the system and datasets for reproducibility.
 
-#### Prerequisites ####
+##### Prerequisites #####
 
 GProM requires TODO. For example, on Ubuntu you can install the prerequisites with:
-
 ~~~shell
 sudo apt-get install
 ~~~
 
-#### Clone git repository
+##### Clone git repository
 
 Please clone the git repository ...
 
@@ -74,28 +93,35 @@ Please clone the git repository ...
 git clone git@github.com:IITDBGroup/gprom ...
 ~~~
 
-#### Build and Install GProM
+##### Build and Install GProM
 
 As mentioned before, Cape is written in Python. We recommend creating a python3 [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/). There are several ways to do that. Here we illustrate one. First enter the directory in which you cloned the capexplain git repository.
 
 - TODO
 
-### Install PDBench
+#### Install PDBench
 
-- TODO
+Our python script will make and generate PDbench data when needed by the experiments.
+The data will be saved into a folder with name s[sval]x[xval] where sval is the scale factor and xval is the uncertainy factor.
 
-### Install Postgres + load database ###
+#### Install Postgres + load database ####
 
-- TODO
+By default the python testing script will connect to database 'postgres' with port 5432. Connection can be configured in the /config/config.ini file. 
 
 # Run Experiments
 
+We provide a unified python script file (gen.py) to run all experiments.
 To run all default experiments:
 ~~~shell
  python3 gen.py
 ~~~
-The script will create a folder /result containing all test results in form of .csv(tables) and .pdf(plots).
-for specifying a single step using -s:
+The schript will record which tests are done so when reruning the script it will not repeat finshed tests.
+To start from beginning of the test, use command -r:
+~~~shell
+ python3 gen.py -r
+~~~
+The script also allowing executing only one experiment
+for specifying a single experiment/step using -s:
 ~~~shell
 -s command values:
 
@@ -111,19 +137,24 @@ for specifying a single step using -s:
 
 5 - perform incompetness projection test.
 
-6 - perform ultility test. (not finished yet)
+6 - perform ultility test.
 
 7 - perform realQuery test.
 ~~~
 
+For example, to run only pdbench test by varying result size and regenerate data using pdbench:
+~~~shell
+ python3 gen.py -r -s 4
+~~~
+
+## Get experiment results
+All experiment results will be save to /result folder. 
+
 # Suggestions and Instructions for Alternative Experiments
 
 ## PDBench experiments with different parameter settings
-For now different parameter settings need to modify the 's' list and 'x' list in the gen.py file where 's' is the list of all scale factors will be tested and 'x' is the list of all uncertainty factors will be tested.(might make it configureable thourgh commands?)
 
-## Projection experiments with different parameters
-
-- TODO
+Different parameter settings need to modify the 's' list and 'x' list in the gen.py file where 's' is the list of all scale factors will be tested and 'x' is the list of all uncertainty factors will be tested.
 
 ## Running ad hoc queries through GProM
 
@@ -183,41 +214,20 @@ TUPLE UNCERTAIN (
 );
 ~~~
 
-
-
-
-
 ### Pointers
 
 To run queries over the provided datasets use start gprom like this:
+(You need to unzip the database if it is not done by the testing script)
 
 ~~~sh
-gprom -backend sqlite -db ./ TODO
+gprom -backend sqlite -db /reproducibility/dbs/incomp.db
 ~~~
 
 #### Table names
+buffalo
 
 #### Example Queries
 
 ~~~sql
-
+TUPLE UNCERTAIN (SELECT "lat" FROM buffalo IS UADB);
 ~~~
-
-# Appendix (previous instructions)
-
-Requirements for plotting:
-	gnuplot
-	ps2pdf
-
-Configure connection detials for postgres in config/database.ini
-
-PDbench tests:
-	For this automated test, each pdbench test with corresponding factors will generate data in a distinct folder. For each time and result size test, the corresponding folder will be loaded into postgres and run queries over it. For next test previous tables will be removed.
-	Test can be extended onto different scale factors by modifying the input list.
-	varying uncertainty:
-		default sacle factor: 1 (1=1GB)
-		default uncertainty factor list: [0.02, 0.05, 0.1, 0.3]
-	varying data scale:
-		default uncertainty factor: 0.02
-		default scale factor list: [0.1, 1, 10]
-	Extra queries can be used only for conventional query processing, UADB and MCDB since we can not get automated rewriting systems from Libkins and Maybms approach.
