@@ -926,6 +926,7 @@ if __name__ == '__main__':
         print("By passing real query test")
         
     #stop server
-    subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])
-
+    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -D /postgresdata stop')
+    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -D /maybms/data stop')
+#    subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])
     
