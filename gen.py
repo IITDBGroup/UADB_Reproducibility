@@ -904,7 +904,7 @@ if __name__ == '__main__':
     if args.step:
         singlestep = int(args.step)
     if args.redo:
-        config.stepsetconfig(curstep=0)
+        config.stepsetconfig(curstep=1)
     
     curs = config.stepconfig()
 #    unzip databases
