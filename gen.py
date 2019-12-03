@@ -665,6 +665,7 @@ def test_ultility():
 #    print(ret)
     writetofile("buff.csv",ret)
     fn = plotUtility("buff")
+    subprocess.call(["mv", "buff.csv","results/utility/buff.csv"])
     subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
     
@@ -703,6 +704,7 @@ def test_ultility():
         ret += "\t%f"%uadbr_recall
     writetofile("inq.csv",ret)
     fn = plotUtility("inq")
+    subprocess.call(["mv", "inq.csv","results/utility/inq.csv"])
     subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
     
@@ -743,6 +745,7 @@ def test_ultility():
         ret += "\t%f"%uadbr_recall
     writetofile("lisc.csv",ret)
     fn = plotUtility("lisc")
+    subprocess.call(["mv", "lisc.csv","results/utility/lisc.csv"])
     subprocess.call(["mkdir", "results/utility"])
     subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
     
@@ -802,7 +805,7 @@ def test_incomp():
                 rez.append(ct[1]/(ct[0]+ct[1]+ct[2]))
                 maxy = max(maxy, np.max(rez)*100)
             result = result + '{0:.12f}'.format(np.min(rez)*100) + "\t" +  '{0:.12f}'.format(np.percentile(rez, 25)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 50)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 75)*100) + "\t" + '{0:.12f}'.format(np.max(rez)*100) + "\n"
-        print(result)
+#        print(result)
         writetofile("incomp_%s.csv"%(tbs[x]), result)
         pdfname = plotIncomplete("incomp_%s.csv"%(tbs[x]),n,maxy,gap)
         subprocess.call(["mv", "incomp_%s.csv"%(tbs[x]),"results/incompleteness/incomp_%s.csv"%(tbs[x])])
@@ -817,8 +820,12 @@ if __name__ == '__main__':
     
     #start postgres server
 #    print("start server")
-#    os.spawnl(os.P_NOWAIT, 'sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
-    subprocess.Popen(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"],shell=False,close_fds=True)
+    os.system('sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -o "-p 5432" -D /postgresdata start')
+    os.system('\n')
+    os.system('sudo -u postgres /maybms/install/bin/pg_ctl -o "-p 5464" -D /maybms/data start')
+    os.system('\n')
+#    subprocess.Popen(["sudo","-u","postgres","/usr/lib/postgresql/9.5/bin/pg_ctl", "-o", '"-p 5432"', "-D", "/postgresdata", "start"],shell=False,close_fds=True)
+#    subprocess.Popen(["sudo","-u","postgres","/maybms/install/bin/pg_ctl", "-o", '"-p 5464"', "-D", "/maybms/data", "start"],shell=False,close_fds=True)
 #    print("server started")
     
     
