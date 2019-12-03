@@ -8,3 +8,7 @@
 database.ini copy
 /dbgen/dbgen
 /dbgen/qgen
+/buff.csv
+/inq.csv
+/lisc.csv
+/dbs

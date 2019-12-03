@@ -1,15 +1,2 @@
 select "Inspection Date","Address","Zip",u_r from foodins where "Results"='Pass w/ Conditions' and "Risk"='Risk 1 (High)';
-
-select count(*) from
-(select "u_Inspection Date","u_address","u_ZIP","u_r" from foodins
-where results="Pass w/ Conditions" and risk="Risk 1 (High)")
-where "u_Inspection Date"='t' and "u_address"='t' and "u_ZIP"='t' and "u_r"='f';
-
-
-112
-12184
-0.00919
-
-
-(0.093+0.089+0.092+0.096+0.095-(0.093+0.089+0.089+0.087+0.094))/(0.093+0.089+0.089+0.087+0.094)
-0.0288
+select count(*) from (select "u_Inspection Date","u_address","u_ZIP","u_r_t" from foodins where results="Pass w/ Conditions" and risk="Risk 1 (High)") where "u_Inspection Date"='t' and "u_address"='t' and "u_ZIP"='t' and "u_r_t"='f';

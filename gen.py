@@ -543,6 +543,49 @@ def plotIncomplete(fn, maxx, maxy,gap):
         subprocess.call(["rm", "%s.ps"%fn])
         return "%s.pdf"%fn
         
+def plotUtility(fn):
+    with open("%s.gp"%fn, "w+") as file:
+        file.write("\n".join([
+            "set size ratio 0.6",
+            "set terminal postscript color enhanced",
+            "set output '%s.ps'"%fn,
+            "unset title",
+            "set tmargin 0",
+            "set bmargin 1",
+            "set rmargin 0",
+            "set lmargin 4.5",
+            "set border 3 front linetype -1 linewidth 1.500",
+            "set style fill solid 0.65 border -1",
+            'set xlabel font "Arial,30" offset 0,-1',
+            'set xlabel "Amount of uncertainty"',
+            'set xtics font "Arial,25"',
+            "set for [i=1:4] linetype i dt i",
+            'set style line 1 lt 4 lc rgb "orange"  lw 9',
+            'set style line 2 lt 1 lc rgb "orange" lw 9',
+            'set style line 3 lt 4 lc rgb "#666666" lw 9',
+            'set style line 4 lt 1 lc rgb "#666666" lw 9',
+            'set style line 5 lt 4 lc rgb "#110099" lw 9',
+            'set style line 6 lt 1 lc rgb "#110099" lw 9',
+            'set ylabel "Rate" font "Arial,29"',
+            'set ylabel  offset character -0.5, 0, 0',
+            'set ytics font "Arial,23"',
+            'set key inside left bottom vertical Right noreverse noenhanced autotitle nobox',
+            'set key font "Arial,26"',
+            'set key spacing 1',
+            'set key samplen 5',
+            'set grid nopolar',
+            'set grid noxtics nomxtics ytics nomytics noztics nomztics nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics',
+            'set grid layerdefault   linetype 0 linewidth 1.000,  linetype 0 linewidth 3.000',
+            'set yrange [ 0.45 : 1.05 ] noreverse nowriteback',
+            'plot "%s.csv" using 1:2 title "UADB - Precision" with lines linestyle 1, "%s.csv" using 1:3 title "UADB - Recall" with lines linestyle 2, "%s.csv" using 1:4 title "Libkin - Precision" with lines linestyle 3, "%s.csv" using 1:5 title "Libkin - Recall" with lines linestyle 4, "%s.csv" using 1:6 title "UADB(RGQP) - precision" with lines linestyle 5, "%s.csv" using 1:7 title "UADB(RGQP) - Recall" with lines linestyle 6'%(fn,fn,fn,fn,fn,fn)
+        ]))
+        file.close()
+        subprocess.call(["gnuplot", "%s.gp"%fn])
+        subprocess.call(["ps2pdf", "%s.ps"%fn, "%s.pdf"%fn])
+        subprocess.call(["rm", "%s.gp"%fn])
+        subprocess.call(["rm", "%s.ps"%fn])
+        return "%s.pdf"%fn
+        
 #test result size and certain percentage
 def test_pdbenchSize():
 #    pdbenchGenOnX()
@@ -585,16 +628,124 @@ def test_pdbenchSize():
             
 def test_ultility():
     #ultility test
+    percent = [0.05,0.1,0.3,0.5]
     #buffalo
     dbn = 'dbs/buff_ulti.db'
-    tables = ['buff5','buff10','buff30','buff50']
-    attrn = 'orig_order_shooting'
-    query = 'select count(*) from %s where "%s">1500 AND "%s"<2500;'%(tbn,attrn,attrn)
-    tp = runLiteQueryDB(dbn, query)
-    for tbn in tables:
-        query = 'select count(*) from %s where "%s">1500 AND "%s"<2500;'%(tbn,attrn,attrn)
-        rt = runLiteQueryDB(dbn, query)
-        print(rt)
+    attrn = 'orig order_shooting'
+    ret = "\t\tP_UADB\t\tR_UADB\t\tP_CERT\t\tR_CERT\tP_UADB_R\tR_UADB_R\n0.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0"
+    for pct in percent:
+        ret += "\n%f"%pct
+        tbn = 'buff'+str(int(pct*100))
+        q = 'select count(*) from %s where "%s">1500 AND "%s"<2500;'%(tbn,attrn,attrn)
+        rel = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "C_%s">1500 AND "C_%s"<2500 AND "" IN (select "" from %s where "%s">1500 AND "%s"<2500);'%(tbn,attrn,attrn,tbn,attrn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "C_%s">1500 AND "C_%s"<2500;'%(tbn,attrn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        uadb_precision = float(tp)/float(pred)
+        uadb_recall = float(tp)/float(rel)
+        ret += "\t%f"%uadb_precision
+        ret += "\t%f"%uadb_recall
+        q = 'select count(*) from %s where "D_%s">1500 AND "D_%s"<2500;'%(tbn,attrn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "D_%s">1500 AND "D_%s"<2500 AND "" IN (select "" from %s where "%s">1500 AND "%s"<2500 AND "U_%s2"=\'t\');'%(tbn,attrn,attrn,tbn,attrn,attrn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        cert_precision = float(tp)/float(pred)
+        cert_recall = float(tp)/float(rel)
+        ret += "\t%f"%cert_precision
+        ret += "\t%f"%cert_recall
+        q = 'select count(*) from %s_3 where "R_%s">\'1500\' AND "R_%s"<\'2500\';'%(tbn,attrn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s_3 where "R_%s">\'1500\' AND "R_%s"<\'2500\' AND "" IN (select "" from %s where "%s">\'1500\' AND "%s"<\'2500\');'%(tbn,attrn,attrn,tbn,attrn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        uadbr_precision = float(tp)/float(pred)
+        uadbr_recall = float(tp)/float(rel)
+        ret += "\t%f"%uadbr_precision
+        ret += "\t%f"%uadbr_recall
+#    print(ret)
+    writetofile("buff.csv",ret)
+    fn = plotUtility("buff")
+    subprocess.call(["mkdir", "results/utility"])
+    subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    
+    #incom
+    dbn = 'dbs/inq_ulti.db'
+    attrn = 'IND235'
+    ret = "\t\tP_UADB\t\tR_UADB\t\tP_CERT\t\tR_CERT\tP_UADB_R\tR_UADB_R\n0.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0"
+    for pct in percent:
+        ret += "\n%f"%pct
+        tbn = 'inq'+str(int(pct*100))
+        q = 'select count(*) from %s where "%s"=\'99.0\';'%(tbn,attrn)
+        rel = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "C_%s"=\'99.0\' AND "" IN (select "" from %s where "%s"=\'99.0\');'%(tbn,attrn,tbn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "C_%s"=\'99.0\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        uadb_precision = float(tp)/float(pred)
+        uadb_recall = float(tp)/float(rel)
+        ret += "\t%f"%uadb_precision
+        ret += "\t%f"%uadb_recall
+        q = 'select count(*) from %s where "D_%s"=\'99.0\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s where "D_%s"=\'99.0\' AND "" IN (select "" from %s where "%s"=99.0 AND "U_%s"=\'t\');'%(tbn,attrn,tbn,attrn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        cert_precision = float(tp)/float(pred)
+        cert_recall = float(tp)/float(rel)
+        ret += "\t%f"%cert_precision
+        ret += "\t%f"%cert_recall
+        q = 'select count(*) from %s_3 where "R_%s"=\'99.0\' AND "" IN (select "" from %s where "%s"=\'99.0\');'%(tbn,attrn,tbn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s_3 where "R_%s"=\'99.0\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        uadbr_precision = float(tp)/float(pred)
+        uadbr_recall = float(tp)/float(rel)
+        ret += "\t%f"%uadbr_precision
+        ret += "\t%f"%uadbr_recall
+    writetofile("inq.csv",ret)
+    fn = plotUtility("inq")
+    subprocess.call(["mkdir", "results/utility"])
+    subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    
+    #lisc
+    dbn = 'dbs/lisc_ulti.db'
+    attrn = 'ZIP CODE'
+    ret = "\t\tP_UADB\t\tR_UADB\t\tP_CERT\t\tR_CERT\tP_UADB_R\tR_UADB_R\n0.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0\t\t1.0"
+    for pct in percent:
+        ret += "\n%f"%pct
+        tbn = 'lisc'+str(int(pct*100))
+        q = 'select count(*) from %s_3 where "%s"=\'60601\';'%(tbn,attrn)
+        rel = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s_3 where "C_%s"=\'60601\' AND "" IN (select "" from %s where "%s"=\'60601\');'%(tbn,attrn,tbn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+#        print(tp)
+        q = 'select count(*) from %s_3 where "C_%s"=\'60601\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        uadb_precision = float(tp)/float(pred)
+        uadb_recall = float(tp)/float(rel)
+        ret += "\t%f"%uadb_precision
+        ret += "\t%f"%uadb_recall
+        q = 'select count(*) from %s_3 where "D_%s"=\'60601\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s_3 where "D_%s"=\'60601\' AND "" IN (select "" from %s where "%s"=\'60601\' AND "U_%s"=\'t\');'%(tbn,attrn,tbn,attrn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        cert_precision = float(tp)/float(pred)
+        cert_recall = float(tp)/float(rel)
+        ret += "\t%f"%cert_precision
+        ret += "\t%f"%cert_recall
+        q = 'select count(*) from %s_3 where "R_%s"=\'60601\';'%(tbn,attrn)
+        pred = runLiteQueryDB(dbn, q)
+        q = 'select count(*) from %s_3 where "R_%s"=\'60601\' AND "" IN (select "" from %s where "%s"=\'60601\');'%(tbn,attrn,tbn,attrn)
+        tp = runLiteQueryDB(dbn, q)
+        uadbr_precision = float(tp)/float(pred)
+        uadbr_recall = float(tp)/float(rel)
+#        print(uadbr_recall, uadb_recall)
+        ret += "\t%f"%uadbr_precision
+        ret += "\t%f"%uadbr_recall
+    writetofile("lisc.csv",ret)
+    fn = plotUtility("lisc")
+    subprocess.call(["mkdir", "results/utility"])
+    subprocess.call(["mv", "%s"%fn,"results/utility/%s"%fn])
+    
         
 def test_realQ():
     queries = ['realQuery/Q1.txt','realQuery/Q2.txt','realQuery/Q3.txt','realQuery/Q4.txt']
@@ -602,12 +753,17 @@ def test_realQ():
     global gpromcom
     global dir
     gpromcom[4] = dir+"/dbs/incomp.db"
-    rep = 10
+    rep = 5
     ret = "\tQ1\tQ2\tQ3\tQ4\tQ5\nOverhead\t"
+    retl2 = "\nError Rate\t"
     for qf in queries:
+        print("Testing Real Query %s"%qf)
         query = copy.copy(gpromcom)
         with open(qf) as fp:
-            q = fp.read().split(';')[0] + ";"
+            contents = fp.read().split(';')
+            q = contents[0] + ";"
+            qsize = "select count(*) from (" + contents[0] + ");"
+            qsizeu = contents[1] + ";"
 #            print(q)
             query.append(q)
             x = subprocess.check_output(query)
@@ -619,10 +775,13 @@ def test_realQ():
                 runLiteQuery("drop table if exists dummy;")
                 t0 += timeLiteQuery("create table dummy as " + q)
                 runLiteQuery("drop table if exists dummy;")
+            sz1 = runLiteQuery(qsize)
+            sz2 = runLiteQuery(qsizeu)
+            rsz = float(sz2[0])/float(sz1[0])
             ret = ret + "%s%%\t"%str(((t1-t0)/t0)*100)
+            retl2 = retl2 + "%f%%\t"%(rsz*100)
     subprocess.call(["mkdir", "results/realQuery"])
-    writetofile("results/realQuery/realQuery.csv",ret)
-    
+    writetofile("results/realQuery/realQuery.csv",ret+retl2)
     
     
 def test_incomp():
@@ -758,6 +917,8 @@ if __name__ == '__main__':
         config.stepsetconfig(curs)
     else:
         print("By passing real query test")
+        
+    
         
     #stop server
     subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])

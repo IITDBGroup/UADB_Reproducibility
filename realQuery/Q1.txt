@@ -1,14 +1,2 @@
 select "ID","Case Number",case when "IUCR"=0820 then 'Theft' when "IUCR"=0486 then 'Domestic Battery' when "IUCR"=1320 then 'Criminal Damage' end as crime_type from crime where "IUCR"=0820 or "IUCR"=0486 or "IUCR"=1320;
-
-select count(*) from
-(select "u_ID","u_Case Number","u_IUCR","u_r" from crime
-where "IUCR"=0820 or "IUCR"=0486 or "IUCR"=1320)
-where "u_ID"='t' and "u_Case Number"='t' and "u_IUCR"='t' and "u_r"='f';
-
-
-1951
-354964
-0.00550
-
-(6.108+6.088+6.064+6.104+6.203-(6.105+5.865+5.947+5.882+6.087))/(6.105+5.865+5.947+5.882+6.087)
-0.0228
+select count(*) from (select "u_ID","u_Case Number","u_IUCR","u_r_t" from crime where "IUCR"=0820 or "IUCR"=0486 or "IUCR"=1320) where "u_ID"='t' and "u_Case Number"='t' and "u_IUCR"='t' and "u_r_t"='f';

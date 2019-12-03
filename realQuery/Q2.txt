@@ -1,18 +1,2 @@
 select ID,"Case Number","Longitude","Latitude" from crime where "Longitude"<'-87.6194' and "Longitude"<'-87.6744' and "Latitude"<'41.9031' and "Latitude">'41.8921';
-
-select count(*) from
-(select "u_ID","u_Case Number","u_Longitude","u_Latitude","u_r" from crime
-where Longitude<"-87.6194" and Longitude<"-87.6744" and Latitude<"41.9031" and Latitude>"41.8921")
-where "u_ID"='t' and "u_Case Number"='t' and "u_Longitude"='t' and "u_Latitude"='t' and "u_r"='f';
-
-
-16
-4354
-0.00367
-
-(3.216+3.410+3.363+3.370+3.328-(3.322+3.277+3.230+3.300+3.261))/((3.322+3.277+3.230+3.300+3.261))
-0.0181
-
-
-select count(*) from crime where Longitude<"-87.6194" and Longitude<-"87.6744" and Latitude<"41.9031" and Latitude>"41.8921" or u_Longitude="f" and u_Latitude="f";
-62160
+select count(*) from(select "u_ID","u_Case Number","u_Longitude","u_Latitude","u_r_t" from crime where Longitude<"-87.6194" and Longitude<"-87.6744" and Latitude<"41.9031" and Latitude>"41.8921")where "u_ID"='t' and "u_Case Number"='t' and "u_Longitude"='t' and "u_Latitude"='t' and "u_r_t"='f';

@@ -1,12 +1,5 @@
 select c."ID",c."Case Number",c."IUCR",g."Status",g."Service Request Number",g."Community Area" from (select * from graffiti where "police district"='8') g, (select * from crime where "district"='008') c where c."X Coordinate"<g."X Coordinate"+100 AND c."X Coordinate">g."X Coordinate"-'100' AND c."Y Coordinate"<g."Y Coordinate"+'100' AND c."Y Coordinate">g."Y Coordinate"-'100';
-
-select count(*) from
-(select c.ID,c.u_ID,c."Case Number",c."u_Case Number",c.IUCR,c.u_IUCR,g.status,g.u_status,g."Community Area",g."u_Community Area", case when c.u_r="f" then "f" when g.u_r="f" then "f" else "t" end as "u_r" from 
-(select * from graffiti 
-where "police district"="8" AND status="Open") g,
-(select * from crime where district="008") c
-where c."X Coordinate"<g."X Coordinate"+100 AND c."X Coordinate">g."X Coordinate"-100 AND c."Y Coordinate"<g."Y Coordinate"+100 AND c."Y Coordinate">g."Y Coordinate"-100)
-where u_ID="t" and "u_Case Number"="t" and "u_IUCR"="t" and "u_status"="t" and "u_Community Area"="t" and "u_r"="f";
+select count(*) from (select c."u_ID", c."u_Case Number", c."u_IUCR", g."u_status", g."u_Community Area", case when c."u_r_t"="f" then "f" when g."u_r_t"="f" then "f" else "t" end as "u_r" from (select * from graffiti where "police district"="8" AND status="Open") g, (select * from crime where district="008") c where c."X Coordinate"<g."X Coordinate"+100 AND c."X Coordinate">g."X Coordinate"-100 AND c."Y Coordinate"<g."Y Coordinate"+100 AND c."Y Coordinate">g."Y Coordinate"-100) where "u_ID"="t" and "u_Case Number"="t" and "u_IUCR"="t" and "u_status"="t" and "u_Community Area"="t" and "u_r"="f";
 
 
 75301
