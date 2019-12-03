@@ -848,9 +848,9 @@ if __name__ == '__main__':
     else:
         print("By passing unzip")
     
-    if curs == 1:
-#        pdbenchGenOnX()#gen pdbench uncert
-#        pdbenchGenOnS()#gen pdbench scale.
+    if (curs==1 and (singlestep == 2 or singlestep == 3 singlestep == 4 or singlestep == -1)) or singlestep == 1:
+        pdbenchGenOnX()#gen pdbench uncert
+        pdbenchGenOnS()#gen pdbench scale.
         curs += 1
         config.stepsetconfig(curs)
         if singlestep==1:
