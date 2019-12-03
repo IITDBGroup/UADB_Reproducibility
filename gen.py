@@ -849,8 +849,8 @@ if __name__ == '__main__':
         print("By passing unzip")
     
     if curs == 1:
-        pdbenchGenOnX()#gen pdbench uncert
-        pdbenchGenOnS()#gen pdbench scale.
+#        pdbenchGenOnX()#gen pdbench uncert
+#        pdbenchGenOnS()#gen pdbench scale.
         curs += 1
         config.stepsetconfig(curs)
         if singlestep==1:
@@ -918,10 +918,7 @@ if __name__ == '__main__':
     else:
         print("By passing real query test")
         
-    
-        
     #stop server
     subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])
-    
 
     

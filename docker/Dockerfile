@@ -59,7 +59,7 @@ RUN git clone https://github.com/IITDBGroup/UADB_Reproducibility.git /reproducib
 ########################################
 # Add sqlite DB for experiments
 ########################################
-RUN mkdir -p /repoducibility/dbs
+RUN mkdir -p /reproducibility/dbs
 ADD ./dbs.zip /reproducibility/dbs/dbs.zip
 ########################################
 # Setup workdin
