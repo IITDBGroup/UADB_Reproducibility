@@ -3,7 +3,9 @@ import math
 import subprocess
 #pip3 install pg8000
 import pg8000
+import psycopg2
 from config import config
+from bags import allrun
 import time
 from zipfile import ZipFile
 import argparse
@@ -25,7 +27,7 @@ s = [0.1, 1, 10]
 #x = [0.02,0.05]
 x = [0.02, 0.05, 0.1, 0.3]
 
-psqlbin = '/Applications/Postgres.app/Contents/Versions/10/bin/psql -p5432 "uadb" -c '
+#psqlbin = '/Applications/Postgres.app/Contents/Versions/10/bin/psql -p5432 "uadb" -c '
 gpromcom = [str("gprom"), "-host", "none", "-db", "/Users/sufeng/git/UADB_Reproducibility/dbs/incomp.db", "-port", "none", "-user", "none", "-passwd", "none", "-loglevel", "0", "-backend", "sqlite", "-Pexecutor", "sql", "-query"]
 
 # pdbench
@@ -48,15 +50,15 @@ def pushQuery(query, setion='postgresql'):
     if conn == None:
         try:
             params = config.config(section=setion)
-            conn = pg8000.connect(**params)
-        except (Exception,pg8000.Error) as error:
+            conn = psycopg2.connect(**params)
+        except Exception as error:
             print(error)
     cur = conn.cursor()
     print(query)
     try:
         cur.execute(query)
         conn.commit()
-    except (Exception, pg8000.Error) as e:
+    except Exception as e:
         print("query error: %s"%e)
         pass
     cur.close()
@@ -70,15 +72,15 @@ def runQuery(query, setion='postgresql'):
             # read connection parameters
             params = config.config(section=setion)
             # connect to the PostgreSQL server
-            conn = pg8000.connect(**params)
-        except (Exception, pg8000.Error) as error:
+            conn = psycopg2.connect(**params)
+        except Exception as error:
             print(error)
     cur = conn.cursor()
     print(query)
     try:
         cur.execute(query)
 #        conn.commit()
-    except (Exception, pg8000.Error) as e:
+    except Exception as e:
         print("query error: %s"%e)
         pass
 #   get outpu if any
@@ -86,7 +88,7 @@ def runQuery(query, setion='postgresql'):
         ret = cur.fetchall()
 #        disconnect()
         return ret
-    except (pg8000.Error) as e:
+    except Exception as e:
         print(e)
         pass
     except TypeError as e:
@@ -98,9 +100,13 @@ def timeQuery(query, setion='postgresql'):
     ret = runQuery('EXPLAIN ANALYSE create table dummy as %s'%query, setion)
     runQuery("drop table IF EXISTS dummy;")
     return ret[-1][0].split()[-2]
+
+def timeQuerySel(query, setion='postgresql'):
+    ret = runQuery('EXPLAIN ANALYSE %s'%query, setion)
+    return ret[-1][0].split()[-2]
     
 def sizeQuery(query, setion='postgresql'):
-    ret = runQuery('select count(*) from (%s) x;'%query[:-1], setion)
+    ret = runQuery('select count(*) from (%s) xyz;'%query[:-1], setion)
     return ret[-1][0];
     
 def pdbenchGenOnX(sval = 1):
@@ -143,9 +149,9 @@ def pdbenchGenOnS(xval = 0.02):
     
 #    subprocess.Popen(['%s/dbgen/dbgen'%dir, '-x', '0.02', '-s', '0.1'])
 
-def terminalQuery(query):
-    global psqlbin
-    os.system(psqlbin + '"%s"'%query)
+#def terminalQuery(query):
+#    global psqlbin
+#    os.system(psqlbin + '"%s"'%query)
         
 #def importPdbenchTables(datadir):
 #    for tbs in pdbenchTables:
@@ -813,10 +819,12 @@ def test_incomp():
         
 def test_maybms():
     global dir
-    pushQuery("drop table if exists buffalo2;", 'maybms')
-    pushQuery("drop table if exists bp2;", 'maybms')
+    subprocess.call(["mkdir", "results/maybms"])
+#    cert = [2,5]
+    cert = [2,5,10,20]
+    pushQuery("drop table if exists buffalo;", 'maybms')
     pushQuery("\n".join([
-        'create table buffalo2 (',
+        'create table buffalo (',
         '"id" NUMERIC,',
         '"lat" NUMERIC,',
         '"lon" NUMERIC,',
@@ -860,12 +868,170 @@ def test_maybms():
         '"u_Victims_shooting" VARCHAR,',
         '"U_R" VARCHAR,',
         '"index" NUMERIC,',
-        '"p" NUMERIC',
+        '"u_index" VARCHAR',
         ');'
     ]), 'maybms')
-    pushQuery("copy buffalo2 from '%s/dbs/maybms/buffalo2.csv' DELIMITER ',' CSV HEADER;"%dir, 'maybms')
-    pushQuery('create table bp2 as repair key "index" in buffalo2 weight by "p";','maybms')
+    pushQuery("copy buffalo from '%s/dbs/maybms/buffalo.csv' DELIMITER ',' CSV HEADER;"%(dir), 'maybms')
+    q1u = timeQuerySel('select "U_R" from buffalo where index=1;','maybms')
+    q2u = timeQuerySel('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\';','maybms')
+    q3u = timeQuerySel('select x.index, y.index, case when x."U_R"=\'f\' then \'f\' when y."U_R"=\'f\' then \'f\' else \'t\' end as U_R from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690;','maybms')
+    s1 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\';','maybms')
+    s2 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\' and "U_R"=\'f\';','maybms')
+    s12 = "%.2f%%"%(float(s2)/float(s1)*100)
+    s3 = sizeQuery('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\' and "u_index"=\'t\' and "u_District_shooting"=\'t\';','maybms')
+    s4 = sizeQuery('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\' and "u_index"=\'t\' and "u_District_shooting"=\'t\' and "U_R"=\'f\';','maybms')
+    s34 = "%.2f%%"%(float(s4)/float(s3)*100)
+    s5 = sizeQuery('select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\';','maybms')
+    s6 = sizeQuery('select * from (select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\') z where z."U_R"=\'f\';','maybms')
+    s56 = "%.2f%%"%(float(s6)/float(s5)*100)
+    q1 = "Q1(time)\t" + q1u
+    q2 = "Q2(time)\t" + q2u
+    q3 = "Q3(time)\t" + q3u
+    sq1 = "Q1(error)\t" + s12
+    sq2 = "Q2(error)\t" + s34
+    sq3 = "Q3(error)\t" + s56
+#    print(q1,q2,q3)
+    for ct in cert:
+        pushQuery("drop table if exists buffalo%d;"%ct, 'maybms')
+        pushQuery("drop table if exists bp%d;"%ct, 'maybms')
+        pushQuery("\n".join([
+            'create table buffalo%d ('%ct,
+            '"id" NUMERIC,',
+            '"lat" NUMERIC,',
+            '"lon" NUMERIC,',
+            '"orig order_shooting" NUMERIC,',
+            '"CD as number_shooting" NUMERIC,',
+            '"CD_shooting" VARCHAR,',
+            '"Date_shooting" VARCHAR,',
+            '"Time_shooting" VARCHAR,',
+            '"WeekNum_shooting" NUMERIC,',
+            '"Month_shooting" VARCHAR,',
+            '"Day_shooting" VARCHAR,',
+            '"Hour_shooting" NUMERIC,',
+            '"Year_shooting" NUMERIC,',
+            '"city" VARCHAR,',
+            '"state" VARCHAR,',
+            '"Location_shooting" VARCHAR,',
+            '"find space_shooting" NUMERIC,',
+            '"street_shooting" VARCHAR,',
+            '"District_shooting" VARCHAR,',
+            '"Type_shooting" VARCHAR,',
+            '"Victims_shooting" NUMERIC,',
+            '"u_lat" VARCHAR,',
+            '"u_lon" VARCHAR,',
+            '"u_orig order_shooting" VARCHAR,',
+            '"u_CD as number_shooting" VARCHAR,',
+            '"u_CD_shooting" VARCHAR,',
+            '"u_Date_shooting" VARCHAR,',
+            '"u_Time_shooting" VARCHAR,',
+            '"u_WeekNum_shooting" VARCHAR,',
+            '"u_Month_shooting" VARCHAR,',
+            '"u_Day_shooting" VARCHAR,',
+            '"u_Hour_shooting" VARCHAR,',
+            '"u_Year_shooting" VARCHAR,',
+            '"u_city" VARCHAR,',
+            '"u_state" VARCHAR,',
+            '"u_Location_shooting" VARCHAR,',
+            '"u_find space_shooting" VARCHAR,',
+            '"u_street_shooting" VARCHAR,',
+            '"u_District_shooting" VARCHAR,',
+            '"u_Type_shooting" VARCHAR,',
+            '"u_Victims_shooting" VARCHAR,',
+            '"U_R" VARCHAR,',
+            '"index" NUMERIC,',
+            '"p" NUMERIC',
+            ');'
+        ]), 'maybms')
+        pushQuery("copy buffalo%d from '%s/dbs/maybms/buffalo%d.csv' DELIMITER ',' CSV HEADER;"%(ct,dir,ct), 'maybms')
+#        os.system("psql -U postgres -d postgres -h 127.0.0.1 -p 5433 -c 'create table bp%d as repair key \"index\" in buffalo%d weight by \"p\";'"%(ct,ct))
+        pushQuery('create table bp%d as repair key "index" in buffalo%d weight by "p";'%(ct,ct),'maybms')
+        #time
+        t1c = timeQuerySel('select conf() from bp%d where index=1;'%ct,'maybms')
+        
+        t2c = timeQuerySel('SELECT * FROM (select "District_shooting",index, conf() from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
+        t3c = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+        t1 = timeQuerySel('select conf(\'A\', 0.3) from bp%d where index=1;'%ct,'maybms')
+        t2 = timeQuerySel('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
+        t3 = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+        #error
+        s2c = sizeQuery('select conf() from bp%d where index=1;'%ct,'maybms')
+        s1c = sizeQuery('select * from (select conf() as cf from bp%d where index=1) x where x.cf!=1.0;'%ct,'maybms')
+#        print(s1c,s2c)
+        s12c = "%.2f%%"%(float(s1c)/float(s2c)*100)
+        s4c = sizeQuery('SELECT * FROM (select "District_shooting",index, conf() from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
+        s3c = sizeQuery('SELECT * FROM (select "District_shooting",index, conf() as cf from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\' and x.cf!=1.0;'%ct,'maybms')
+#        print(s3c,s4c)
+        s34c = "%.2f%%"%(float(s3c)/float(s4c)*100)
+        s6c = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+        s5c = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where p!=1.0;'%(ct,ct),'maybms')
+#        print(s5c,s6c)
+        s56c = "%.2f%%"%(float(s5c)/float(s6c)*100)
+        s2 = sizeQuery('select conf(\'A\', 0.3) from bp%d where index=1;'%ct,'maybms')
+        s1 = sizeQuery('select * from (select conf(\'A\', 0.3) as cf from bp%d where index=1) x where x.cf!=1.0;'%ct,'maybms')
+        s12 = "%.2f%%"%(float(s1)/float(s2)*100)
+        s4 = sizeQuery('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
+        s3 = sizeQuery('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) as cf from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\' and ((x.cf<1.0 and x.cf>0.99)or(x.cf>0 and x.cf<0.01));'%ct,'maybms')
+        s34 = "%.2f%%"%(float(s3)/float(s4)*100)
+        s6 = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+        s5 = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where ((p<1.0 and p>0.99)or(p>0 and p<0.01));'%(ct,ct),'maybms')
+        s56 = "%.2f%%"%(float(s5)/float(s6)*100)
+        q1 += "\t%s(%s)"%(t1,t1c)
+        q2 += "\t%s(%s)"%(t2,t2c)
+        q3 += "\t%s(%s)"%(t3,t3c)
+        sq1 += "\t%s(%s)"%(s12,s12c)
+        sq2 += "\t%s(%s)"%(s34,s34c)
+        sq3 += "\t%s(%s)"%(s56,s56c)
+    ret = "\t\tUADB\t\tMB-02\t\tMB-05\t\tMB-10\t\tMB-20\n"
+    ret += q1 + "\n" + sq1 + "\n" + q2 + "\n" + sq2 + "\n" + q3 + "\n" + sq3
+    writetofile("results/maybms/maybms.csv", ret)
     
+def test_bags():
+    ret = allrun()
+#    print(ret)
+    writetofile("bags.csv", ret)
+    with open("bags.gp", "w+") as file:
+        file.write("\n".join([
+            'set size ratio 0.35',
+            'set terminal postscript color enhanced',
+            "set output 'bags.ps'",
+            'unset title',
+            'set tmargin 0',
+            'set bmargin 1',
+            'set rmargin 0',
+            'set lmargin 4.5',
+            'set border 3 front linetype -1 linewidth 1.500',
+            'set style fill solid 0.65 border -1',
+            'set xlabel font "Arial,30" offset 0,-1',
+            'set xlabel "Number of projection attributes"',
+            'set xtics font "Arial,25"',
+            'set style line 1 lt 1 lc rgb "#AA00FF" lw 9',
+            'set style line 2 lt 1 lc rgb "#0055AA" lw 9',
+            'set style line 3 lt 1 lc rgb "#FFAA00" lw 9',
+            'set ylabel "Mean error rate" font "Arial,29"',
+            'set ylabel  offset character -0.5, 0, 0',
+            'set ytics font "Arial,23"',
+            'set key inside right top vertical Right noreverse noenhanced autotitle nobox',
+            'set key font "Arial,26"',
+            'set key spacing 1',
+            'set grid nopolar',
+            'set grid noxtics nomxtics ytics nomytics noztics nomztics nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics',
+            'set grid layerdefault   linetype 0 linewidth 1.000,  linetype 0 linewidth 3.000',
+            'set yrange [ 0 : 0.055 ] noreverse nowriteback',
+            'plot "bags.csv" using 1:2 title \'buffalo\' with lines linestyle 1, "bags.csv" using 1:3 title \'foodins\' with lines linestyle 2, "bags.csv" using 1:4 title \'permits\' with lines linestyle 3'
+        ]))
+        file.close()
+    subprocess.call(["gnuplot", "bags.gp"])
+    subprocess.call(["ps2pdf", "bags.ps", "bags.pdf"])
+    subprocess.call(["rm", "bags.gp"])
+    subprocess.call(["rm", "bags.ps"])
+    subprocess.call(["mkdir", "results/bags"])
+    subprocess.call(["mv", "bags.pdf","results/bags/bags.pdf"])
+    subprocess.call(["mv", "bags.csv","results/bags/bags.csv"])
+    
+def test_secu():
+    subprocess.call(["mkdir", "results/security"])
+    subprocess.call(["python3", "security_semiring/draw.py"])
+    subprocess.call(["cp", "security_semiring/unified_final_mean.pdf","results/security/unified_final_mean.pdf"])
     
 def exittest():
     print("Closing postgres servers")
@@ -874,7 +1040,6 @@ def exittest():
 #    time.sleep(10)
     quit()
         
-    
         
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.abspath(__file__))
@@ -998,6 +1163,28 @@ if __name__ == '__main__':
         config.stepsetconfig(curs)
     else:
         print("By passing maybms test")
+        
+    if curs == 9 and singlestep == -1 or singlestep == 9:
+        test_bags()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            exittest()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing bags test")
+        
+    if curs == 10 and singlestep == -1 or singlestep == 10:
+        test_secu()
+        if(singlestep == -1):
+            curs += 1
+        else:
+            exittest()
+        config.stepsetconfig(curs)
+    else:
+        print("By passing security semiring test")
+        
+    
         
     exittest()
 #    subprocess.call(["/usr/lib/postgresql/9.5/bin/pg_ctl", "-D", "/postgresdata", "stop"])

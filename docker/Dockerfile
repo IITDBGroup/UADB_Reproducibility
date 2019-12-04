@@ -61,7 +61,9 @@ RUN git clone https://github.com/IITDBGroup/UADB_Reproducibility.git /reproducib
 ########################################
 RUN mkdir -p /reproducibility/dbs
 ADD ./dbs.zip /reproducibility/dbs/dbs.zip
-RUN unzip /reproducibility/dbs/dbs.zip && rm /repoducibility/dbs/dbs.zip
+RUN cd /reproducibility/dbs \
+     && unzip dbs.zip \
+     && rm dbs.zip
 ########################################
 # Setup workdin
 ########################################
