@@ -18,7 +18,8 @@ RUN apt-get -y update && apt-get install -y \
 # Install python packages
 ########################################
 RUN pip3 install pg8000 \
-    && pip3 install numpy
+    && pip3 install numpy \
+    && pip3 install psycopg2
 ########################################
 # Clone GProM github repository
 ########################################

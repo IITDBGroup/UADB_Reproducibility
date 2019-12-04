@@ -606,7 +606,7 @@ def test_pdbenchSize():
     ret = "uncert\tQ1\tQ2\tQ3\t"
     for k in range(0,len(test1)):
         datadir = test1[k]
-#        importPdbenchTables(datadir)
+        importPdbenchTables(datadir)
         ret = ret + "\n%d%%\t"%(x[k]*100)
         resl = []
         reslmb = []
@@ -615,7 +615,7 @@ def test_pdbenchSize():
                 q = fp.read()
                 resl.append(sizeQuery(q))
                 qnew = q.split(';')[0]
-                allres = runQuery("select count(*) from (%s) xx ;"%qnew)[0]
+                allres = runQuery("select count(*) from (%s) xx;"%qnew)[0]
                 certres = runQuery("select count(*) from (%s) xx where u_r=1;"%qnew)[0]
                 ret = ret + str(int(round(float(certres[0])/float(allres[0])))) + "%%(%d)\t"%certres[0]
             with open(queries_mb[i]) as fp:
