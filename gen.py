@@ -758,7 +758,7 @@ def test_ultility():
     
         
 def test_realQ():
-    queries = ['realQuery/Q1.txt','realQuery/Q2.txt','realQuery/Q3.txt','realQuery/Q4.txt']
+    queries = ['realQuery/Q1.txt','realQuery/Q2.txt','realQuery/Q3.txt','realQuery/Q4.txt','realQuery/Q5.txt']
     runLiteQuery("drop table if exists dummy;")
     global gpromcom
     global dir
@@ -808,7 +808,7 @@ def test_incomp():
             result = result + str(j) + "\t"
             for i in range(1,20):
                 ct,samp = onerun(attrs, j, tbs[x])
-                rez.append(ct[1]/(ct[0]+ct[1]+ct[2]))
+                rez.append(str(ct[1]/(ct[0]+ct[1]+ct[2])))
                 maxy = max(maxy, np.max(rez)*100)
             result = result + '{0:.12f}'.format(np.min(rez)*100) + "\t" +  '{0:.12f}'.format(np.percentile(rez, 25)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 50)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 75)*100) + "\t" + '{0:.12f}'.format(np.max(rez)*100) + "\n"
 #        print(result)
@@ -1073,16 +1073,16 @@ if __name__ == '__main__':
     
     curs = config.stepconfig()
 #    unzip databases
-    if curs == 0:
-        print('Unzipping tables')
-        with ZipFile('dbs/dbs.zip', 'r') as zipObj:
-            zipObj.extractall(path='dbs/')
-        curs += 1
-        config.stepsetconfig(curs)
-        if singlestep==0:
-            exittest()
-    else:
-        print("By passing unzip")
+#    if curs == 0:
+#        print('Unzipping tables')
+#        with ZipFile('dbs/dbs.zip', 'r') as zipObj:
+#            zipObj.extractall(path='dbs/')
+#        curs += 1
+#        config.stepsetconfig(curs)
+#        if singlestep==0:
+#            exittest()
+#    else:
+#        print("By passing unzip")
     
     if (curs==1 and (singlestep == 2 or singlestep == 3 or singlestep == 4 or singlestep == -1)) or singlestep == 1:
         pdbenchGenOnX()#gen pdbench uncert
