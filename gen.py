@@ -444,8 +444,8 @@ def test_pdbench_scale():
 db = 'dbs/incomp.db'
         #table
         #tb = 'pls'
-tbs = ['graffiti','buffalo','busi','cont','crime','foodins','graffiti','permit','pls']
-attrnums = [15,20,25,12,17,16,15,19,97]
+tbs = ['graffiti','buffalo','busi','cont','crime','foodins','violation','permit','pls']
+attrnums = [15,20,25,12,17,16,35,19,97]
 
 def getSchema(tname, n):
     global db
@@ -510,7 +510,7 @@ def onerun(attrs, n, tb):
     command = "select count(*) from (select %s from %s where %s);" % (str,tb,wstrfp)
     fp = runLiteQuery(command)
             
-    return (tp,fn,fp), rd
+    return (tp,fn,fp),rd
     
 def plotIncomplete(fn, maxx, maxy,gap):
     with open("%s.gp"%fn, "w+") as file:
@@ -808,7 +808,7 @@ def test_incomp():
             result = result + str(j) + "\t"
             for i in range(1,20):
                 ct,samp = onerun(attrs, j, tbs[x])
-                rez.append(str(ct[1]/(ct[0]+ct[1]+ct[2])))
+                rez.append(ct[1][0]/(ct[0][0]+ct[1][0]+ct[2][0]))
                 maxy = max(maxy, np.max(rez)*100)
             result = result + '{0:.12f}'.format(np.min(rez)*100) + "\t" +  '{0:.12f}'.format(np.percentile(rez, 25)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 50)*100) + "\t" + '{0:.12f}'.format(np.percentile(rez, 75)*100) + "\t" + '{0:.12f}'.format(np.max(rez)*100) + "\n"
 #        print(result)
