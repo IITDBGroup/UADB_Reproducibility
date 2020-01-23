@@ -58,7 +58,13 @@ All runtime experiments were executed on a server with the following specs:
 
 A docker hub is prepared with all requirements installed,
 
-You can pull the docker image with:
+To install docker, please refer to the docker website:
+
+(A account is required to download/use docker)
+
+https://www.docker.com/get-started
+
+After docker is installed, you can pull the docker image with:
 ~~~shell
 docker pull iitdbgroup/uadbreproduce
 ~~~
@@ -66,13 +72,15 @@ The image entry point is set to /bin/bash, so to load the docker image in comman
 ~~~shell
 docker run -ti iitdbgroup/uadbreproduce
 ~~~
+(Some systems may need sudo for docker operations)
+
 The main test script is under the default entry folder.
 All test results is saved to /results folder. To get the results in local system, mount a local system folder to the docker container result folder when load the image:
 ~~~shell
 docker run -ti -v /your/local/directory:/reproducibility/results iitdbgroup/uadbreproduce 
 ~~~
 
-### strp by step installations (not required if use docker)
+### step by step installations (not required if use docker)
 
 #### Install GProM
 
