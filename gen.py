@@ -23,7 +23,8 @@ cur = None
 conn2 = None
 cur2 = None
 
-s = [0.1, 1, 10]
+#s = [0.1, 1, 10]
+s = [0.1, 1]
 #x = [0.02,0.05]
 x = [0.02, 0.05, 0.1, 0.3]
 
@@ -36,9 +37,10 @@ pdbenchTables = ['customer','lineitem','nation','orders','part','partsupp','regi
 
 #dir = '/Users/sufeng/sqlworkspace/pdbench'
 mcdbRep = 10
-#test1 = ['s10_x2','s10_x5','s10_x10','s10_x30']
-test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
-test2 = ['s10_x2','s100_x2','s1000_x2']
+test1 = ['s10_x2','s10_x5','s10_x10','s10_x30']
+#test1 = ['s100_x2','s100_x5','s100_x10','s100_x30']
+#test2 = ['s10_x2','s100_x2','s1000_x2']
+test2 = ['s10_x2','s100_x2']
 queries = ['pdQuery/Q1.sql','pdQuery/Q2.sql','pdQuery/Q3.sql']
 queries_mb = ['pdQuery/Q1_maybms.sql','pdQuery/Q2_maybms.sql','pdQuery/Q3_maybms.sql']
 queries_uadb = ['pdQuery/Q1_uadb.sql','pdQuery/Q2_uadb.sql','pdQuery/Q3_uadb.sql']
@@ -1085,7 +1087,7 @@ if __name__ == '__main__':
 #        print("By passing unzip")
     
     if (curs==1 and (singlestep == 2 or singlestep == 3 or singlestep == 4 or singlestep == -1)) or singlestep == 1:
-        pdbenchGenOnX()#gen pdbench uncert
+        pdbenchGenOnX(0.1)#gen pdbench uncert
         pdbenchGenOnS()#gen pdbench scale.
         curs += 1
         config.stepsetconfig(curs)
