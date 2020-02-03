@@ -877,7 +877,7 @@ def test_maybms():
     pushQuery("copy buffalo from '%s/dbs/maybms/buffalo.csv' DELIMITER ',' CSV HEADER;"%(dir), 'maybms')
     q1u = timeQuerySel('select "U_R" from buffalo where index=1;','maybms')
     q2u = timeQuerySel('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\';','maybms')
-    q3u = 0
+    q3u = "-"
 #    q3u = timeQuerySel('select x.index, y.index, case when x."U_R"=\'f\' then \'f\' when y."U_R"=\'f\' then \'f\' else \'t\' end as U_R from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690;','maybms')
     s1 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\';','maybms')
     s2 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\' and "U_R"=\'f\';','maybms')
