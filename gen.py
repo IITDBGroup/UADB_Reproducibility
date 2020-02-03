@@ -823,7 +823,8 @@ def test_maybms():
     global dir
     subprocess.call(["mkdir", "results/maybms"])
 #    cert = [2,5]
-    cert = [2,5,10,20]
+    cert = [2,5,10]
+#    cert = [2,5,10,20]
     pushQuery("drop table if exists buffalo;", 'maybms')
     pushQuery("\n".join([
         'create table buffalo (',
@@ -876,16 +877,17 @@ def test_maybms():
     pushQuery("copy buffalo from '%s/dbs/maybms/buffalo.csv' DELIMITER ',' CSV HEADER;"%(dir), 'maybms')
     q1u = timeQuerySel('select "U_R" from buffalo where index=1;','maybms')
     q2u = timeQuerySel('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\';','maybms')
-    q3u = timeQuerySel('select x.index, y.index, case when x."U_R"=\'f\' then \'f\' when y."U_R"=\'f\' then \'f\' else \'t\' end as U_R from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690;','maybms')
+    q3u = 0
+#    q3u = timeQuerySel('select x.index, y.index, case when x."U_R"=\'f\' then \'f\' when y."U_R"=\'f\' then \'f\' else \'t\' end as U_R from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690;','maybms')
     s1 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\';','maybms')
     s2 = sizeQuery('select "U_R" from buffalo where index=1 and "u_index"=\'t\' and "U_R"=\'f\';','maybms')
     s12 = "%.2f%%"%(float(s2)/float(s1)*100)
     s3 = sizeQuery('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\' and "u_index"=\'t\' and "u_District_shooting"=\'t\';','maybms')
     s4 = sizeQuery('SELECT * FROM buffalo where index<2000 and index>650 and "District_shooting"=\'BD\' and "u_index"=\'t\' and "u_District_shooting"=\'t\' and "U_R"=\'f\';','maybms')
     s34 = "%.2f%%"%(float(s4)/float(s3)*100)
-    s5 = sizeQuery('select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\';','maybms')
-    s6 = sizeQuery('select * from (select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\') z where z."U_R"=\'f\';','maybms')
-    s56 = "%.2f%%"%(float(s6)/float(s5)*100)
+#    s5 = sizeQuery('select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\';','maybms')
+#    s6 = sizeQuery('select * from (select x.index, y.index, case when x."U_R"=\'f\' or y."U_R"=\'f\' then \'f\' else \'t\' end as "U_R" from buffalo x, buffalo y where x."District_shooting"=y."District_shooting" and x."Type_shooting"=y."Type_shooting" and x.index=690 and x."u_index"=\'t\' and y."u_Type_shooting"=\'t\' and x."u_Type_shooting"=\'t\' and y."u_District_shooting"=\'t\' and x."u_District_shooting"=\'t\') z where z."U_R"=\'f\';','maybms')
+    s56 = "-"
     q1 = "Q1(time)\t" + q1u
     q2 = "Q2(time)\t" + q2u
     q3 = "Q3(time)\t" + q3u
@@ -951,10 +953,10 @@ def test_maybms():
         t1c = timeQuerySel('select conf() from bp%d where index=1;'%ct,'maybms')
         
         t2c = timeQuerySel('SELECT * FROM (select "District_shooting",index, conf() from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
-        t3c = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+#        t3c = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
         t1 = timeQuerySel('select conf(\'A\', 0.3) from bp%d where index=1;'%ct,'maybms')
         t2 = timeQuerySel('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
-        t3 = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+#        t3 = timeQuerySel('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
         #error
         s2c = sizeQuery('select conf() from bp%d where index=1;'%ct,'maybms')
         s1c = sizeQuery('select * from (select conf() as cf from bp%d where index=1) x where x.cf!=1.0;'%ct,'maybms')
@@ -964,19 +966,21 @@ def test_maybms():
         s3c = sizeQuery('SELECT * FROM (select "District_shooting",index, conf() as cf from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\' and x.cf!=1.0;'%ct,'maybms')
 #        print(s3c,s4c)
         s34c = "%.2f%%"%(float(s3c)/float(s4c)*100)
-        s6c = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
-        s5c = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where p!=1.0;'%(ct,ct),'maybms')
+#        s6c = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+#        s5c = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf() as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where p!=1.0;'%(ct,ct),'maybms')
 #        print(s5c,s6c)
-        s56c = "%.2f%%"%(float(s5c)/float(s6c)*100)
+        s56c = "-"
+#        s56c = "%.2f%%"%(float(s5c)/float(s6c)*100)
         s2 = sizeQuery('select conf(\'A\', 0.3) from bp%d where index=1;'%ct,'maybms')
         s1 = sizeQuery('select * from (select conf(\'A\', 0.3) as cf from bp%d where index=1) x where x.cf!=1.0;'%ct,'maybms')
         s12 = "%.2f%%"%(float(s1)/float(s2)*100)
         s4 = sizeQuery('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\';'%ct,'maybms')
         s3 = sizeQuery('SELECT * FROM (select "District_shooting",index, conf(\'A\', 0.3) as cf from bp%d group by "District_shooting",index) x where index<2000 and index>650 and "District_shooting"=\'BD\' and ((x.cf<1.0 and x.cf>0.99)or(x.cf>0 and x.cf<0.01));'%ct,'maybms')
         s34 = "%.2f%%"%(float(s3)/float(s4)*100)
-        s6 = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
-        s5 = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where ((p<1.0 and p>0.99)or(p>0 and p<0.01));'%(ct,ct),'maybms')
-        s56 = "%.2f%%"%(float(s5)/float(s6)*100)
+#        s6 = sizeQuery('select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690;'%(ct,ct),'maybms')
+#        s5 = sizeQuery('select * from (select xind, yind,p from (select y.index as yind,x.index as xind,x."District_shooting" as xds, y."District_shooting" as yds,x."Type_shooting" as xts,y."Type_shooting" as yts, conf(\'A\', 0.3) as p from bp%d y, bp%d x group by y.index, x.index,y."District_shooting",x."District_shooting",x."Type_shooting",y."Type_shooting") z where xds=yds and xts=yts and xind=690) ax where ((p<1.0 and p>0.99)or(p>0 and p<0.01));'%(ct,ct),'maybms')
+        s56 = "-"
+#        s56 = "%.2f%%"%(float(s5)/float(s6)*100)
         q1 += "\t%s(%s)"%(t1,t1c)
         q2 += "\t%s(%s)"%(t2,t2c)
         q3 += "\t%s(%s)"%(t3,t3c)
