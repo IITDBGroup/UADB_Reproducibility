@@ -983,10 +983,10 @@ def test_maybms():
 #        s56 = "%.2f%%"%(float(s5)/float(s6)*100)
         q1 += "\t%s(%s)"%(t1,t1c)
         q2 += "\t%s(%s)"%(t2,t2c)
-        q3 += "\t%s(%s)"%(t3,t3c)
+        q3 += "\t-(-)"
         sq1 += "\t%s(%s)"%(s12,s12c)
         sq2 += "\t%s(%s)"%(s34,s34c)
-        sq3 += "\t%s(%s)"%(s56,s56c)
+        sq3 += "\-(-)"%(s56,s56c)
     ret = "\t\tUADB\t\tMB-02\t\tMB-05\t\tMB-10\t\tMB-20\n"
     ret += q1 + "\n" + sq1 + "\n" + q2 + "\n" + sq2 + "\n" + q3 + "\n" + sq3
     writetofile("results/maybms/maybms.csv", ret)
