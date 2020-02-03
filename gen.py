@@ -986,7 +986,7 @@ def test_maybms():
         q3 += "\t-(-)"
         sq1 += "\t%s(%s)"%(s12,s12c)
         sq2 += "\t%s(%s)"%(s34,s34c)
-        sq3 += "\-(-)"%(s56,s56c)
+        sq3 += "\-(-)"
     ret = "\t\tUADB\t\tMB-02\t\tMB-05\t\tMB-10\t\tMB-20\n"
     ret += q1 + "\n" + sq1 + "\n" + q2 + "\n" + sq2 + "\n" + q3 + "\n" + sq3
     writetofile("results/maybms/maybms.csv", ret)
