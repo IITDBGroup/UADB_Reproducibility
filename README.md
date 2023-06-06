@@ -1,4 +1,4 @@
-# SIGMOD Reproducibility for "Uncertainty Annotated Databases - A Lightweight and General Approach for Approximating Certain Answers"
+# SIGMOD Artifacts for "Uncertainty Annotated Databases - A Lightweight and General Approach for Approximating Certain Answers"
 
 
 ## A) Source code info
